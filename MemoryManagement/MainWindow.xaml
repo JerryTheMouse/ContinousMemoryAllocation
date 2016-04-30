@@ -5,67 +5,86 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MemoryManagement"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="Auto">
+        Title="MainWindow" Height="Auto" Width="Auto">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto" />
 
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
 
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="340*"/>
-            <ColumnDefinition Width="340*"/>
+            <ColumnDefinition Width="340*" />
+            <ColumnDefinition Width="340*" />
 
         </Grid.ColumnDefinitions>
         <Grid.Resources>
             <Style TargetType="{x:Type GroupBox}">
-                <Setter Property="Margin" Value="5,0,0,0"/>
+                <Setter Property="Margin" Value="5,0,0,0" />
             </Style>
         </Grid.Resources>
-        <GroupBox Header="Create a new hole" Grid.Column="0" Grid.Row="0"  >
-            <StackPanel  Orientation="Vertical" Margin="0 10 0 0" >
+        <GroupBox Header="Create a new hole" Grid.Column="0" Grid.Row="0">
+            <StackPanel Orientation="Vertical" Margin="0 10 0 0">
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type TextBox}">
-                        <Setter Property="Margin" Value="0,10,0,0"/>
+                        <Setter Property="Margin" Value="0,10,0,0" />
                     </Style>
                 </StackPanel.Resources>
-                <Label Content="Enter hole base register :"></Label>
-                <TextBox Name="HoleBaseReg" PreviewTextInput="NumericInputOnly_OnPreviewTextInput" ></TextBox>
-                <Label Content="Enter hole size :"></Label>
-                <TextBox Name="HoleSize" ></TextBox>
-                <Button Content="Create" Click="Create_New_Hole_Click" Margin="0,10,0,5"></Button>
+                <Label Content="Enter hole base register :" />
+                <TextBox Name="HoleBaseReg" PreviewTextInput="NumericInputOnly_OnPreviewTextInput" />
+                <Label Content="Enter hole size :" />
+                <TextBox Name="HoleSize" />
+                <Button Content="Create" Click="Create_New_Hole_Click" Margin="0,10,0,5" />
             </StackPanel>
         </GroupBox>
 
 
-        <GroupBox  Grid.Row="1" Grid.Column="1" Header="Holes" >
-            <DataGrid  x:Name="HoleDGrid" MinWidth="300" AutoGenerateColumns="True"  HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"   CanUserAddRows="False">
-
-
-            </DataGrid>
+        <GroupBox Grid.Row="1" Grid.Column="0" Header="Holes">
+            <DataGrid x:Name="HoleDGrid" MinWidth="300" AutoGenerateColumns="True" HorizontalAlignment="Left"
+                      Margin="10,10,0,0" VerticalAlignment="Top" CanUserAddRows="False" />
         </GroupBox>
-        <GroupBox Header="Create a new hole" Grid.Column="1" Grid.Row="0"  >
-            <StackPanel  Orientation="Vertical" Margin="0 10 0 0" >
+        <GroupBox Header="Create a new hole" Grid.Column="1" Grid.Row="0">
+            <StackPanel Orientation="Vertical" Margin="0 10 0 0">
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type TextBox}">
-                        <Setter Property="Margin" Value="0,10,0,0"/>
+                        <Setter Property="Margin" Value="0,10,0,0" />
                     </Style>
                 </StackPanel.Resources>
-                <Label Content="Enter process memory requierment :"></Label>
-                <TextBox Name="ProcessMemorySize" PreviewTextInput="NumericInputOnly_OnPreviewTextInput" ></TextBox>
+                <Label Content="Enter process memory requierment :" />
+                <TextBox Name="ProcessMemorySize" PreviewTextInput="NumericInputOnly_OnPreviewTextInput" />
 
-                <Button Content="Create" Click="Create_New_Process_Click"  Margin="0,10,0,5"></Button>
+                <Button Content="Create" Click="Create_New_Process_Click" Margin="0,10,0,5" />
             </StackPanel>
         </GroupBox>
 
 
-        <GroupBox  Grid.Row="1" Grid.Column="0" Header="Processes" >
-            <DataGrid  x:Name="ProcessesDGrid" MinWidth="300" AutoGenerateColumns="True"  HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"   CanUserAddRows="False">
+        <GroupBox Grid.Row="1" Grid.Column="1" Header="Processes">
+            <DataGrid x:Name="ProcessesDGrid" MinWidth="300" AutoGenerateColumns="True" HorizontalAlignment="Left"
+                      Margin="10,10,0,0" VerticalAlignment="Top" CanUserAddRows="False" />
+        </GroupBox>
+        <GroupBox Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Header="Select Algorthim">
+            <StackPanel Orientation="Vertical" Margin="0 10 0 0">
 
+                <Label Content="Enter process memory requierment :" />
+                <ComboBox Name="AlgorthimCb" Margin="0,10,0,0" SelectedIndex="0">
+                    <ComboBoxItem Content="First fit"  />
+                    <ComboBoxItem Content="Worst fit"  />
+                    <ComboBoxItem Content="Best fit"  />
 
-            </DataGrid>
+                </ComboBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Start" Name="StartButton" Click="RunAlgorithm_Click" Grid.Row="0" Grid.Column="0" Margin="10"/>
+                    <Button Content="Reset" Name ="ResetButton" IsEnabled="False"  Click="ResetAlgorithm_Click" Grid.Row="0" Grid.Column="1" Margin="10" />
+
+                </Grid>
+                  
+            </StackPanel>
+
         </GroupBox>
     </Grid>
 </Window>
