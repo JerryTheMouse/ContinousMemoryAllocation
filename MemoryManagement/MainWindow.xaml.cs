@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using MemoryManagement.Data;
@@ -15,12 +16,11 @@ namespace MemoryManagement
     //todo : add DataGrid for AssignedHoles 
     //todo : add a way to deallocate a hole from assigned holes datagrid
     //todo : When an assigned hole is deallocated, recombine it with other available holes if possible
-
     public partial class MainWindow : Window
     {
         private readonly List<Hole> holes;
         private readonly List<Process> processes;
-        private readonly Dictionary<Hole,Process> assignedHoles;
+        private readonly Dictionary<Hole, Process> assignedHoles;
 
         public MainWindow()
         {
@@ -41,24 +41,30 @@ namespace MemoryManagement
             ResetButton.IsEnabled = true;
             processes.Reverse();
 
-            switch (AlgorthimCb.SelectedIndex)
+            for (int i = processes.Count - 1; i >= 0; i--)
             {
-                case 0:
-                    for (int i = processes.Count - 1; i >= 0; i--)
-                    {
-                        Hole h = FirstFitAlgorithm(processes[i]);
-                        if (h != null)
-                            AssignHoleToProcess(h, processes[i]);
-                    }
+                Hole h = null;
+                switch (AlgorthimCb.SelectedIndex)
+                {
+                    case 0:
 
 
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
+                        h = FirstFitAlgorithm(processes[i]);
 
+                        break;
+                    case 1:
+                        h = WorstFitAlgorithm(processes[i]);
+
+                        break;
+                    case 2:
+                        h = BestFitAlgorithm(processes[i]);
+
+                        break;
+                }
+                if (h != null)
+                    AssignHoleToProcess(h, processes[i]);
             }
+
             processes.Reverse();
             RefreshLayout();
         }
@@ -76,8 +82,8 @@ namespace MemoryManagement
             assignedHoles.Clear();
             //Refresh Layout
             RefreshLayout();
-
         }
+
         private void AssignHoleToProcess(Hole h, Process p)
         {
             if (h.Size < p.Size)
@@ -97,7 +103,6 @@ namespace MemoryManagement
 
             //Add hole and its corresping process
             assignedHoles.Add(h, p);
-
         }
 
         //todo : Change the function to run the bestFit Algorthim on the set of holes to find and return the target         for process P
@@ -107,22 +112,36 @@ namespace MemoryManagement
             return null;
         }
 
-        //todo : Change the function to run the worstFit Algorthim on the set of holes to find and return the target         for process P
 
         private Hole WorstFitAlgorithm(Process p)
         {
+            int max = 0;
+
+            for (int i = 1; i < holes.Count; i++)
+            {
+                if (holes[i].Size > holes[max].Size)
+                    max = i;
+            }
+            if (holes[max].Size > p.Size)
+                return holes[max];
+
+
             return null;
         }
 
-        //todo : Change the function to run the firstFit Algorthim on the set of holes to find and return the target         for process P
 
         private Hole FirstFitAlgorithm(Process p)
         {
-            foreach (Hole h in holes)
+            //We must first sort the holes according to their base register value before we do linear search
+            var sortedHoles = holes.OrderBy(x => x.BaseReg);
+            for (int i = 0; i < sortedHoles.Count(); i++)
             {
-                if (h.Size >= p.Size)
-                    return h;
+                if (sortedHoles.ElementAt(i).Size > p.Size)
+                {
+                    return sortedHoles.ElementAt(i);
+                }
             }
+
             return null;
         }
 
@@ -200,6 +219,7 @@ namespace MemoryManagement
         #endregion
 
         #region GUI related functions
+
         private void RefreshLayout()
         {
             HoleDGrid.Items.Refresh();
@@ -207,7 +227,6 @@ namespace MemoryManagement
             HoleDGrid.UpdateLayout();
             ProcessesDGrid.UpdateLayout();
             //todo : refresh DataGrid for AssignedHoles when added
-
         }
 
         private void NumericInputOnly_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -217,7 +236,5 @@ namespace MemoryManagement
         }
 
         #endregion
-
-
     }
 }
