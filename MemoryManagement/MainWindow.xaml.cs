@@ -30,6 +30,7 @@ namespace MemoryManagement
             assignedHoles = new Dictionary<Hole, Process>();
             HoleDGrid.ItemsSource = holes;
             ProcessesDGrid.ItemsSource = processes;
+            AllocatedHolesDGrid.ItemsSource = assignedHoles.Keys;
         }
 
         #region Algorithms Related functions
@@ -39,36 +40,50 @@ namespace MemoryManagement
             StartButton.IsEnabled = false;
             AlgorthimCb.IsEnabled = false;
             ResetButton.IsEnabled = true;
+            CreateNewHoleBtn.IsEnabled = false;
+            CreateProcessBtn.IsEnabled = false;
+            ProcessMemorySize.IsEnabled = false;
+            HoleBaseReg.IsEnabled = false;
+            HoleSize.IsEnabled = false;
+            RunAlgorthim();
+        }
+
+        private void RunAlgorthim()
+        {
             processes.Reverse();
-
-            for (int i = processes.Count - 1; i >= 0; i--)
-            {
-                Hole h = null;
-                switch (AlgorthimCb.SelectedIndex)
+            bool allocated ;
+            do {
+                allocated = false;
+                for (int i = processes.Count - 1; i >= 0; i--)
                 {
-                    case 0:
+                    Hole h = null;
+                    switch (AlgorthimCb.SelectedIndex)
+                    {
+                        case 0:
 
 
-                        h = FirstFitAlgorithm(processes[i]);
+                            h = FirstFitAlgorithm(processes[i]);
 
-                        break;
-                    case 1:
-                        h = WorstFitAlgorithm(processes[i]);
+                            break;
+                        case 1:
+                            h = WorstFitAlgorithm(processes[i]);
 
-                        break;
-                    case 2:
-                        h = BestFitAlgorithm(processes[i]);
+                            break;
+                        case 2:
+                            h = BestFitAlgorithm(processes[i]);
 
-                        break;
+                            break;
+                    }
+                    if (h != null) { 
+                        AssignHoleToProcess(h, processes[i]);
+                        allocated = true;
+                    }
                 }
-                if (h != null)
-                    AssignHoleToProcess(h, processes[i]);
             }
-
+            while (allocated);
             processes.Reverse();
             RefreshLayout();
         }
-
 
         private void ResetAlgorithm_Click(object sender, RoutedEventArgs e)
         {
@@ -76,6 +91,11 @@ namespace MemoryManagement
             StartButton.IsEnabled = true;
             AlgorthimCb.IsEnabled = true;
             ResetButton.IsEnabled = false;
+            CreateNewHoleBtn.IsEnabled = true;
+            CreateProcessBtn.IsEnabled = true;
+            ProcessMemorySize.IsEnabled = true;
+            HoleBaseReg.IsEnabled = true;
+            HoleSize.IsEnabled = true;
             //Clear Processes, Holes and Assigned
             holes.Clear();
             processes.Clear();
@@ -103,13 +123,25 @@ namespace MemoryManagement
 
             //Add hole and its corresping process
             assignedHoles.Add(h, p);
+            AllocatedHolesDGrid.Items.Refresh();
+            AllocatedHolesDGrid.UpdateLayout();
         }
 
-        //todo : Change the function to run the bestFit Algorthim on the set of holes to find and return the target         for process P
 
         private Hole BestFitAlgorithm(Process p)
         {
+            int min=-1;
+            for (int i=0; i < holes.Count; i++) {
+
+                if (holes[i].Size >= p.Size && min == -1)
+                    min = i;
+                else if (holes[i].Size >= p.Size && holes[i].Size <holes[min].Size)
+                    min = i; 
+                 }
+            if(min != -1)
+                return holes[min];
             return null;
+            
         }
 
 
@@ -122,7 +154,7 @@ namespace MemoryManagement
                 if (holes[i].Size > holes[max].Size)
                     max = i;
             }
-            if (holes[max].Size > p.Size)
+            if (holes[max].Size >= p.Size)
                 return holes[max];
 
 
@@ -136,7 +168,7 @@ namespace MemoryManagement
             var sortedHoles = holes.OrderBy(x => x.BaseReg);
             for (int i = 0; i < sortedHoles.Count(); i++)
             {
-                if (sortedHoles.ElementAt(i).Size > p.Size)
+                if (sortedHoles.ElementAt(i).Size >= p.Size)
                 {
                     return sortedHoles.ElementAt(i);
                 }
@@ -183,9 +215,7 @@ namespace MemoryManagement
                         return;
                     }
                 }
-                holes.Add(new Hole(baseReg, size));
-                HoleDGrid.Items.Refresh();
-                HoleDGrid.UpdateLayout();
+                AddHole(new Hole(baseReg, size));
             }
             catch (Exception)
             {
@@ -194,6 +224,39 @@ namespace MemoryManagement
             }
         }
 
+        private void AddHole(Hole newHole)
+        {
+            Hole lower = null;
+            Hole upper = null;
+            foreach (var hole in holes)
+            {
+                if (hole.BaseReg + hole.Size == newHole.BaseReg)
+                {
+                    lower = hole;
+                }
+                else if (newHole.BaseReg + newHole.Size == hole.BaseReg)
+                {
+                    upper = hole;
+                }
+            }
+            if (upper != null)
+            {
+                holes.Remove(upper);
+                newHole.Size += upper.Size;
+            }
+            if (lower != null)
+            {
+
+                holes.Remove(lower);
+                lower.Size += newHole.Size;
+                newHole = lower;
+            }
+
+            holes.Add(newHole);
+
+            HoleDGrid.Items.Refresh();
+            HoleDGrid.UpdateLayout();
+        }
 
         private void Create_New_Process_Click(object sender, RoutedEventArgs e)
         {
@@ -227,6 +290,8 @@ namespace MemoryManagement
             HoleDGrid.UpdateLayout();
             ProcessesDGrid.UpdateLayout();
             //todo : refresh DataGrid for AssignedHoles when added
+            AllocatedHolesDGrid.Items.Refresh();
+            AllocatedHolesDGrid.UpdateLayout();
         }
 
         private void NumericInputOnly_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -236,5 +301,27 @@ namespace MemoryManagement
         }
 
         #endregion
+
+        private void AllocatedHolesDGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+
+            if (Key.Delete==e.Key)
+            {
+                var selectedHole = (Hole)AllocatedHolesDGrid.SelectedItem;
+                assignedHoles.Remove(selectedHole);
+                AllocatedHolesDGrid.Items.Refresh();
+                AllocatedHolesDGrid.UpdateLayout();
+
+                AddHole(selectedHole);
+                RunAlgorthim();            }
+        }
+        private void allocateSpacesAmongHoles() {
+            var sortedHoles = holes.OrderBy(x => x.BaseReg);
+            
+            for (int i = 0; i < sortedHoles.Count()- 1; i++) {
+                   }
+
+        }
+
     }
 }
