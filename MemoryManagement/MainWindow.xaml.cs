@@ -14,9 +14,7 @@ namespace MemoryManagement
     /// </summary>
     /// 
 
-    //todo : add DataGrid for AssignedHoles 
-    //todo : add a way to deallocate a hole from assigned holes datagrid
-    //todo : When an assigned hole is deallocated, recombine it with other available holes if possible
+
     public partial class MainWindow : Window
     {
         private readonly ObservableCollection<Hole> holes;
@@ -42,6 +40,14 @@ namespace MemoryManagement
             Comparison<Hole> hC = (hole, hole1) => hole.BaseReg.CompareTo(hole1.BaseReg);
             var sortedHoles = holes.ToList();
             sortedHoles.Sort(hC);
+            //Check if the first hole of memory is allocated
+            if (sortedHoles[0].BaseReg != 0)
+            {
+                uint basereg = 0;
+                uint size = sortedHoles[0].BaseReg ;
+                assignedHoles.Add(new Hole(basereg, size));
+
+            }
             for (int i = 0; i < sortedHoles.Count() - 1; i++)
             {
                 uint basereg = sortedHoles[i].BaseReg + sortedHoles[i].Size + 1;
