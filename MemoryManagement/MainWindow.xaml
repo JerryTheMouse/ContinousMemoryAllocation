@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MemoryManagement"
         mc:Ignorable="d"
-        Title="MainWindow" Height="Auto" Width="Auto">
+        Title="Contiguous Memory Allocation" Height="Auto" Width="Auto">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
 
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
 
         </Grid.RowDefinitions>
@@ -42,7 +42,7 @@
 
 
         <GroupBox Grid.Row="1" Grid.Column="0" Header="Holes">
-            <DataGrid x:Name="HoleDGrid" MinWidth="300" AutoGenerateColumns="True" HorizontalAlignment="Left"
+            <DataGrid x:Name="HoleDGrid" MinWidth="300" AutoGenerateColumns="True" HorizontalAlignment="Left" ItemsSource="{Binding holes}"
                       Margin="10,10,0,0" VerticalAlignment="Top" CanUserAddRows="False" />
         </GroupBox>
         <GroupBox Header="Create a new hole" Grid.Column="1" Grid.Row="0">

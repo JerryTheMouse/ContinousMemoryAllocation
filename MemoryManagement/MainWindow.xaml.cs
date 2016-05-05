@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -18,31 +19,34 @@ namespace MemoryManagement
     //todo : When an assigned hole is deallocated, recombine it with other available holes if possible
     public partial class MainWindow : Window
     {
-        private readonly List<Hole> holes;
-        private readonly List<Process> processes;
-        private readonly Dictionary<Hole, Process> assignedHoles;
+        private readonly ObservableCollection<Hole> holes;
+        private readonly ObservableCollection<Process> processes;
+        
+        private readonly ObservableCollection<Hole> assignedHoles;
 
         public MainWindow()
         {
             InitializeComponent();
-            holes = new List<Hole>();
-            processes = new List<Process>();
-            assignedHoles = new Dictionary<Hole, Process>();
+            holes = new ObservableCollection<Hole>();
+            processes = new ObservableCollection<Process>();
+            assignedHoles = new ObservableCollection<Hole>();
             HoleDGrid.ItemsSource = holes;
+            
             ProcessesDGrid.ItemsSource = processes;
-            AllocatedHolesDGrid.ItemsSource = assignedHoles.Keys;
+            AllocatedHolesDGrid.ItemsSource = assignedHoles;
         }
 
         #region Algorithms Related functions
         private void AllocateSpacesAmongHoles()
         {
             Comparison<Hole> hC = (hole, hole1) => hole.BaseReg.CompareTo(hole1.BaseReg);
-            holes.Sort(hC);
-            for (int i = 0; i < holes.Count() - 1; i++)
+            var sortedHoles = holes.ToList();
+            sortedHoles.Sort(hC);
+            for (int i = 0; i < sortedHoles.Count() - 1; i++)
             {
-                uint basereg = holes[i].BaseReg + holes[i].Size + 1;
-                uint size = holes[i + 1].BaseReg - holes[i].BaseReg - holes[i].Size;
-                assignedHoles.Add(new Hole(basereg, size), new Process(size));
+                uint basereg = sortedHoles[i].BaseReg + sortedHoles[i].Size + 1;
+                uint size = sortedHoles[i + 1].BaseReg - sortedHoles[i].BaseReg - sortedHoles[i].Size;
+                assignedHoles.Add(new Hole(basereg, size));
             }
 
         }
@@ -53,8 +57,6 @@ namespace MemoryManagement
             {
                 var selectedHole = (Hole)AllocatedHolesDGrid.SelectedItem;
                 assignedHoles.Remove(selectedHole);
-                AllocatedHolesDGrid.Items.Refresh();
-                AllocatedHolesDGrid.UpdateLayout();
 
                 AddHole(selectedHole);
                 RunAlgorthim();
@@ -108,7 +110,6 @@ namespace MemoryManagement
             }
             while (allocated);
             processes.Reverse();
-            RefreshLayout();
         }
 
         private void ResetAlgorithm_Click(object sender, RoutedEventArgs e)
@@ -127,7 +128,6 @@ namespace MemoryManagement
             processes.Clear();
             assignedHoles.Clear();
             //Refresh Layout
-            RefreshLayout();
         }
 
         private void AssignHoleToProcess(Hole h, Process p)
@@ -147,10 +147,8 @@ namespace MemoryManagement
             //Remove process from its queue
             processes.Remove(p);
 
-            //Add hole and its corresping process
-            assignedHoles.Add(h, p);
-            AllocatedHolesDGrid.Items.Refresh();
-            AllocatedHolesDGrid.UpdateLayout();
+            //Add the hole to the assignedHoles
+            assignedHoles.Add(h);
         }
 
 
@@ -280,8 +278,7 @@ namespace MemoryManagement
 
             holes.Add(newHole);
 
-            HoleDGrid.Items.Refresh();
-            HoleDGrid.UpdateLayout();
+      
         }
 
         private void Create_New_Process_Click(object sender, RoutedEventArgs e)
@@ -295,8 +292,8 @@ namespace MemoryManagement
 
 
                 processes.Add(new Process(size));
-                ProcessesDGrid.Items.Refresh();
-                ProcessesDGrid.UpdateLayout();
+   
+
             }
             catch (Exception)
             {
@@ -309,16 +306,7 @@ namespace MemoryManagement
 
         #region GUI related functions
 
-        private void RefreshLayout()
-        {
-            HoleDGrid.Items.Refresh();
-            ProcessesDGrid.Items.Refresh();
-            HoleDGrid.UpdateLayout();
-            ProcessesDGrid.UpdateLayout();
-            //todo : refresh DataGrid for AssignedHoles when added
-            AllocatedHolesDGrid.Items.Refresh();
-            AllocatedHolesDGrid.UpdateLayout();
-        }
+       
 
         private void NumericInputOnly_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
         {
