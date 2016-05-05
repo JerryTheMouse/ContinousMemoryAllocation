@@ -34,7 +34,32 @@ namespace MemoryManagement
         }
 
         #region Algorithms Related functions
+        private void AllocateSpacesAmongHoles()
+        {
+            Comparison<Hole> hC = (hole, hole1) => hole.BaseReg.CompareTo(hole1.BaseReg);
+            holes.Sort(hC);
+            for (int i = 0; i < holes.Count() - 1; i++)
+            {
+                uint basereg = holes[i].BaseReg + holes[i].Size + 1;
+                uint size = holes[i + 1].BaseReg - holes[i].BaseReg - holes[i].Size;
+                assignedHoles.Add(new Hole(basereg, size), new Process(size));
+            }
 
+        }
+        private void AllocatedHolesDGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+
+            if (Key.Delete == e.Key)
+            {
+                var selectedHole = (Hole)AllocatedHolesDGrid.SelectedItem;
+                assignedHoles.Remove(selectedHole);
+                AllocatedHolesDGrid.Items.Refresh();
+                AllocatedHolesDGrid.UpdateLayout();
+
+                AddHole(selectedHole);
+                RunAlgorthim();
+            }
+        }
         private void RunAlgorithm_Click(object sender, RoutedEventArgs e)
         {
             StartButton.IsEnabled = false;
@@ -45,6 +70,7 @@ namespace MemoryManagement
             ProcessMemorySize.IsEnabled = false;
             HoleBaseReg.IsEnabled = false;
             HoleSize.IsEnabled = false;
+            AllocateSpacesAmongHoles();
             RunAlgorthim();
         }
 
@@ -302,26 +328,8 @@ namespace MemoryManagement
 
         #endregion
 
-        private void AllocatedHolesDGrid_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
 
-            if (Key.Delete==e.Key)
-            {
-                var selectedHole = (Hole)AllocatedHolesDGrid.SelectedItem;
-                assignedHoles.Remove(selectedHole);
-                AllocatedHolesDGrid.Items.Refresh();
-                AllocatedHolesDGrid.UpdateLayout();
 
-                AddHole(selectedHole);
-                RunAlgorthim();            }
-        }
-        private void allocateSpacesAmongHoles() {
-            var sortedHoles = holes.OrderBy(x => x.BaseReg);
-            
-            for (int i = 0; i < sortedHoles.Count()- 1; i++) {
-                   }
-
-        }
 
     }
 }
